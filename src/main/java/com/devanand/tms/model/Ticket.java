@@ -1,6 +1,8 @@
 package com.devanand.tms.model;
 import com.devanand.tms.constant.Status;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,7 +23,9 @@ public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String issueDescription;
+    private String description;
+
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @ManyToOne
