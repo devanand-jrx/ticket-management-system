@@ -37,10 +37,28 @@ public class AgentService {
     }
 
     public AgentResponse getAgentById(Long id) {
-        return agentRepository
-                .findById(id)
-                .map(agent -> modelMapper.map(agent, AgentResponse.class))
-                .orElseThrow(
-                        () -> new AgentNotFoundException("Agent with id " + id + " not found"));
+        Agent agent =
+                agentRepository
+                        .findById(id)
+                        .orElseThrow(
+                                () -> new AgentNotFoundException("Agent not found with id " + id));
+        return modelMapper.map(agent, AgentResponse.class);
+    }
+
+    public AgentResponse updateAgent(Long id, AgentRequest agentRequest) {
+        Agent agent =
+                agentRepository
+                        .findById(id)
+                        .orElseThrow(
+                                () -> new AgentNotFoundException("Agent not found with id " + id));
+        modelMapper.map(agentRequest, agent);
+        return modelMapper.map(agentRepository.save(agent), AgentResponse.class);
+    }
+
+    public void deleteAgent(Long id) {
+        if (!agentRepository.existsById(id)) {
+            throw new AgentNotFoundException("Agent not found with id " + id);
+        }
+        agentRepository.deleteById(id);
     }
 }
