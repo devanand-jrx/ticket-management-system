@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class TicketRequest {
     private String description;
     private String status;
+    private Long agentId;
+    private Long customerId;
 }

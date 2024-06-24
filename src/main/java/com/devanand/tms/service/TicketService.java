@@ -30,22 +30,29 @@ public class TicketService {
 
     @Autowired private ModelMapper modelMapper;
 
-    public TicketResponse createTicket(Long agentId, Long CustomerId, TicketRequest ticketRequest) {
+    public TicketResponse createTicket(TicketRequest ticketRequest) {
         Agent agent =
                 agentRepository
-                        .findById(agentId)
-                        .orElseThrow(() -> new AgentNotFoundException("Agent not found"));
+                        .findById(ticketRequest.getAgentId())
+                        .orElseThrow(
+                                () ->
+                                        new AgentNotFoundException(
+                                                "Agent not found with id "
+                                                        + ticketRequest.getAgentId()));
         Customer customer =
                 customerRepository
-                        .findById(CustomerId)
-                        .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+                        .findById(ticketRequest.getCustomerId())
+                        .orElseThrow(
+                                () ->
+                                        new CustomerNotFoundException(
+                                                "Customer not found with id "
+                                                        + ticketRequest.getCustomerId()));
 
         Ticket ticket =
-                modelMapper
-                        .map(ticketRequest, Ticket.TicketBuilder.class)
-                        .agent(agent)
-                        .customer(customer)
+                Ticket.builder()
+                        .description(ticketRequest.getDescription())
                         .status(Status.valueOf(ticketRequest.getStatus()))
+                        .customer(customer)
                         .build();
 
         return modelMapper.map(ticketRepository.save(ticket), TicketResponse.class);
@@ -86,5 +93,84 @@ public class TicketService {
             throw new TicketNotFoundException("Ticket not found with id " + id);
         }
         ticketRepository.deleteById(id);
+    }
+
+    public TicketResponse assignTicketToAgent(Long ticketId, Long agentId) {
+        Ticket ticket =
+                ticketRepository
+                        .findById(ticketId)
+                        .orElseThrow(
+                                () ->
+                                        new TicketNotFoundException(
+                                                "Ticket not found with id " + ticketId));
+        Agent agent =
+                agentRepository
+                        .findById(agentId)
+                        .orElseThrow(
+                                () ->
+                                        new TicketNotFoundException(
+                                                "Agent not found with id " + agentId));
+        ticket.setAgent(agent);
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        return TicketResponse.builder()
+                .id(savedTicket.getId())
+                .description(savedTicket.getDescription())
+                .status(String.valueOf(savedTicket.getStatus()))
+                .agentId(agentId)
+                .customerId(savedTicket.getCustomer().getId())
+                .build();
+    }
+
+    public TicketResponse updateTicketStatus(Long ticketId, String status) {
+        Ticket ticket =
+                ticketRepository
+                        .findById(ticketId)
+                        .orElseThrow(
+                                () ->
+                                        new TicketNotFoundException(
+                                                "Ticket not found with id " + ticketId));
+        ticket.setStatus(Status.valueOf(status));
+        return modelMapper.map(ticketRepository.save(ticket), TicketResponse.class);
+    }
+
+    public List<TicketResponse> searchByDescription(String description) {
+        return ticketRepository.findByDescriptionContaining(description).stream()
+                .map(ticket -> modelMapper.map(ticket, TicketResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<TicketResponse> searchByCustomer(String customer) {
+        return ticketRepository.findTicketsByCustomerLike(customer).stream()
+                .map(ticket -> modelMapper.map(ticket, TicketResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    public Ticket convertToEntity(TicketRequest ticketRequest) {
+        Agent agent =
+                agentRepository
+                        .findById(ticketRequest.getAgentId())
+                        .orElseThrow(() -> new AgentNotFoundException("Agent not found"));
+        Customer customer =
+                customerRepository
+                        .findById(ticketRequest.getCustomerId())
+                        .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
+
+        return Ticket.builder()
+                .description(ticketRequest.getDescription())
+                .status(Status.valueOf(ticketRequest.getStatus()))
+                .agent(agent)
+                .customer(customer)
+                .build();
+    }
+
+    public TicketResponse convertToResponse(Ticket ticket) {
+        return TicketResponse.builder()
+                .id(ticket.getId())
+                .description(ticket.getDescription())
+                .status(String.valueOf(ticket.getStatus()))
+                .agentId(ticket.getAgent().getId())
+                .customerId(ticket.getCustomer().getId())
+                .build();
     }
 }
