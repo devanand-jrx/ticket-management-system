@@ -1,4 +1,5 @@
 package com.devanand.tms.service;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,6 +13,9 @@ import com.devanand.tms.contract.response.CustomerResponse;
 import com.devanand.tms.exception.CustomerNotFoundException;
 import com.devanand.tms.model.Customer;
 import com.devanand.tms.repository.CustomerRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -19,47 +23,44 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 public class CustomerServiceTest {
 
-    @InjectMocks
-    private CustomerService customerService;
+    @InjectMocks private CustomerService customerService;
 
-    @Mock
-    private CustomerRepository customerRepository;
+    @Mock private CustomerRepository customerRepository;
 
-    @Mock
-    private ModelMapper modelMapper;
+    @Mock private ModelMapper modelMapper;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     @Test
     void testCreateCustomer() {
         CustomerRequest customerRequest = new CustomerRequest("Name", "name@example.com");
-        Customer customer = Customer.builder()
-                .name(customerRequest.getName())
-                .email(customerRequest.getEmail())
-                .build();
-        CustomerResponse expectedResponse = CustomerResponse.builder()
-                .id(1L)
-                .name(customer.getName())
-                .email(customer.getEmail())
-                .build();
+        Customer customer =
+                Customer.builder()
+                        .name(customerRequest.getName())
+                        .email(customerRequest.getEmail())
+                        .build();
+        CustomerResponse expectedResponse =
+                CustomerResponse.builder()
+                        .id(1L)
+                        .name(customer.getName())
+                        .email(customer.getEmail())
+                        .build();
 
         when(customerRepository.save(any(Customer.class))).thenReturn(customer);
         when(modelMapper.map(customer, CustomerResponse.class)).thenReturn(expectedResponse);
 
         CustomerResponse actualResponse = customerService.createCustomer(customerRequest);
 
-
         assertEquals(expectedResponse, actualResponse);
         verify(customerRepository, times(1)).save(any(Customer.class));
         verify(modelMapper, times(1)).map(customer, CustomerResponse.class);
     }
+
     @Test
     void testGetAllCustomers() {
         List<Customer> customers = new ArrayList<>();
@@ -68,13 +69,15 @@ public class CustomerServiceTest {
         customerResponses.add(new CustomerResponse());
 
         when(customerRepository.findAll()).thenReturn(customers);
-        when(modelMapper.map(any(Customer.class), eq(CustomerResponse.class))).thenReturn(customerResponses.get(0));
+        when(modelMapper.map(any(Customer.class), eq(CustomerResponse.class)))
+                .thenReturn(customerResponses.get(0));
 
         List<CustomerResponse> result = customerService.getAllCustomers();
 
         assertEquals(customerResponses.size(), result.size());
         verify(customerRepository).findAll();
-        verify(modelMapper, times(customers.size())).map(any(Customer.class), eq(CustomerResponse.class));
+        verify(modelMapper, times(customers.size()))
+                .map(any(Customer.class), eq(CustomerResponse.class));
     }
 
     @Test
@@ -99,14 +102,16 @@ public class CustomerServiceTest {
 
         when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.getCustomerById(customerId));
+        assertThrows(
+                CustomerNotFoundException.class, () -> customerService.getCustomerById(customerId));
         verify(customerRepository).findById(customerId);
     }
 
     @Test
     void testUpdateCustomer() {
         Long customerId = 1L;
-        CustomerRequest customerRequest = new CustomerRequest("Updated Name", "updated.email@example.com");
+        CustomerRequest customerRequest =
+                new CustomerRequest("Updated Name", "updated.email@example.com");
         Customer customer = new Customer();
         Customer updatedCustomer = new Customer();
         CustomerResponse customerResponse = new CustomerResponse();
@@ -127,11 +132,14 @@ public class CustomerServiceTest {
     @Test
     void testUpdateCustomer_ThrowsException() {
         Long customerId = 1L;
-        CustomerRequest customerRequest = new CustomerRequest("Updated Name", "updated.email@example.com");
+        CustomerRequest customerRequest =
+                new CustomerRequest("Updated Name", "updated.email@example.com");
 
         when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.updateCustomer(customerId, customerRequest));
+        assertThrows(
+                CustomerNotFoundException.class,
+                () -> customerService.updateCustomer(customerId, customerRequest));
         verify(customerRepository).findById(customerId);
     }
 
@@ -153,8 +161,8 @@ public class CustomerServiceTest {
 
         when(customerRepository.existsById(customerId)).thenReturn(false);
 
-        assertThrows(CustomerNotFoundException.class, () -> customerService.deleteCustomer(customerId));
+        assertThrows(
+                CustomerNotFoundException.class, () -> customerService.deleteCustomer(customerId));
         verify(customerRepository).existsById(customerId);
     }
-
 }

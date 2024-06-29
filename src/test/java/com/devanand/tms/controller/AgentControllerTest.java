@@ -1,54 +1,46 @@
 package com.devanand.tms.controller;
 
-import com.devanand.tms.contract.request.AgentRequest;
-import com.devanand.tms.contract.response.AgentResponse;
-import com.devanand.tms.service.AgentService;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.devanand.tms.contract.request.AgentRequest;
+import com.devanand.tms.contract.response.AgentResponse;
+import com.devanand.tms.service.AgentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 public class AgentControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @MockBean
-    private AgentService agentService;
+    @MockBean private AgentService agentService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
     @Test
     public void testCreateAgent() throws Exception {
         AgentRequest agentRequest = new AgentRequest();
         AgentResponse agentResponse = new AgentResponse();
 
-        when(agentService.createAgent(any(AgentRequest.class)))
-                .thenReturn(agentResponse);
+        when(agentService.createAgent(any(AgentRequest.class))).thenReturn(agentResponse);
 
         mockMvc.perform(
                         post("/admin/agents")
@@ -62,8 +54,7 @@ public class AgentControllerTest {
     public void testGetAllAgents() throws Exception {
         List<AgentResponse> agentResponses = new ArrayList<>();
 
-        when(agentService.getAllAgents())
-                .thenReturn(agentResponses);
+        when(agentService.getAllAgents()).thenReturn(agentResponses);
 
         mockMvc.perform(get("/admin/agents"))
                 .andExpect(status().isOk())
@@ -75,8 +66,7 @@ public class AgentControllerTest {
         Long agentId = 1L;
         AgentResponse agentResponse = new AgentResponse();
 
-        when(agentService.getAgentById(agentId))
-                .thenReturn(agentResponse);
+        when(agentService.getAgentById(agentId)).thenReturn(agentResponse);
 
         mockMvc.perform(get("/admin/agents/" + agentId))
                 .andExpect(status().isOk())
@@ -106,7 +96,6 @@ public class AgentControllerTest {
 
         doNothing().when(agentService).deleteAgent(agentId);
 
-        mockMvc.perform(delete("/admin/agents/" + agentId))
-                .andExpect(status().isOk());
+        mockMvc.perform(delete("/admin/agents/" + agentId)).andExpect(status().isOk());
     }
 }

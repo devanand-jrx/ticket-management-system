@@ -1,4 +1,5 @@
 package com.devanand.tms.service;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,13 +12,15 @@ import com.devanand.tms.constant.Status;
 import com.devanand.tms.contract.request.TicketRequest;
 import com.devanand.tms.contract.response.TicketResponse;
 import com.devanand.tms.exception.TicketNotFoundException;
-
 import com.devanand.tms.model.Agent;
 import com.devanand.tms.model.Customer;
 import com.devanand.tms.model.Ticket;
-import com.devanand.tms.repository.TicketRepository;
 import com.devanand.tms.repository.AgentRepository;
 import com.devanand.tms.repository.CustomerRepository;
+import com.devanand.tms.repository.TicketRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -25,26 +28,17 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 public class TicketServiceTest {
 
-    @InjectMocks
-    private TicketService ticketService;
+    @InjectMocks private TicketService ticketService;
 
-    @Mock
-    private TicketRepository ticketRepository;
+    @Mock private TicketRepository ticketRepository;
 
-    @Mock
-    private AgentRepository agentRepository;
+    @Mock private AgentRepository agentRepository;
 
-    @Mock
-    private CustomerRepository customerRepository;
+    @Mock private CustomerRepository customerRepository;
 
-    @Mock
-    private ModelMapper modelMapper;
+    @Mock private ModelMapper modelMapper;
 
     @BeforeEach
     public void setUp() {
@@ -56,21 +50,24 @@ public class TicketServiceTest {
         TicketRequest ticketRequest = new TicketRequest("Description", "OPEN", 1L, 1L);
         Agent agent = new Agent();
         Customer customer = new Customer();
-        Ticket ticket = Ticket.builder()
-                .description(ticketRequest.getDescription())
-                .status(Status.valueOf(ticketRequest.getStatus()))
-                .customer(customer)
-                .build();
-        TicketResponse expectedResponse = TicketResponse.builder()
-                .id(1L)
-                .description(ticket.getDescription())
-                .status(ticketRequest.getStatus())
-                .agentId(agent.getId())
-                .customerId(customer.getId())
-                .build();
+        Ticket ticket =
+                Ticket.builder()
+                        .description(ticketRequest.getDescription())
+                        .status(Status.valueOf(ticketRequest.getStatus()))
+                        .customer(customer)
+                        .build();
+        TicketResponse expectedResponse =
+                TicketResponse.builder()
+                        .id(1L)
+                        .description(ticket.getDescription())
+                        .status(ticketRequest.getStatus())
+                        .agentId(agent.getId())
+                        .customerId(customer.getId())
+                        .build();
 
         when(agentRepository.findById(ticketRequest.getAgentId())).thenReturn(Optional.of(agent));
-        when(customerRepository.findById(ticketRequest.getCustomerId())).thenReturn(Optional.of(customer));
+        when(customerRepository.findById(ticketRequest.getCustomerId()))
+                .thenReturn(Optional.of(customer));
         when(ticketRepository.save(any(Ticket.class))).thenReturn(ticket);
         when(modelMapper.map(ticket, TicketResponse.class)).thenReturn(expectedResponse);
 
@@ -91,7 +88,8 @@ public class TicketServiceTest {
         ticketResponses.add(new TicketResponse());
 
         when(ticketRepository.findAll()).thenReturn(tickets);
-        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class))).thenReturn(ticketResponses.get(0));
+        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class)))
+                .thenReturn(ticketResponses.get(0));
 
         List<TicketResponse> result = ticketService.getAllTickets();
 
@@ -154,7 +152,9 @@ public class TicketServiceTest {
 
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
 
-        assertThrows(TicketNotFoundException.class, () -> ticketService.updateTicket(ticketId, ticketRequest));
+        assertThrows(
+                TicketNotFoundException.class,
+                () -> ticketService.updateTicket(ticketId, ticketRequest));
         verify(ticketRepository).findById(ticketId);
     }
 
@@ -187,29 +187,29 @@ public class TicketServiceTest {
         Agent agent = new Agent();
         Customer customer = new Customer();
 
-        Ticket ticket = Ticket.builder()
-                .customer(customer)
-                .build();
+        Ticket ticket = Ticket.builder().customer(customer).build();
 
-        Ticket savedTicket = Ticket.builder()
-                .id(ticketId)
-                .description("Sample description")
-                .status(Status.OPEN)
-                .agent(agent)
-                .customer(customer)
-                .build();
+        Ticket savedTicket =
+                Ticket.builder()
+                        .id(ticketId)
+                        .description("Sample description")
+                        .status(Status.OPEN)
+                        .agent(agent)
+                        .customer(customer)
+                        .build();
 
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
         when(agentRepository.findById(agentId)).thenReturn(Optional.of(agent));
         when(ticketRepository.save(ticket)).thenReturn(savedTicket);
 
-        TicketResponse expectedResponse = TicketResponse.builder()
-                .id(savedTicket.getId())
-                .description(savedTicket.getDescription())
-                .status(String.valueOf(savedTicket.getStatus()))
-                .agentId(agentId)
-                .customerId(savedTicket.getCustomer().getId())
-                .build();
+        TicketResponse expectedResponse =
+                TicketResponse.builder()
+                        .id(savedTicket.getId())
+                        .description(savedTicket.getDescription())
+                        .status(String.valueOf(savedTicket.getStatus()))
+                        .agentId(agentId)
+                        .customerId(savedTicket.getCustomer().getId())
+                        .build();
 
         when(modelMapper.map(savedTicket, TicketResponse.class)).thenReturn(expectedResponse);
 
@@ -224,8 +224,6 @@ public class TicketServiceTest {
         verify(agentRepository).findById(agentId);
         verify(ticketRepository).save(ticket);
     }
-
-
 
     @Test
     void testUpdateTicketStatus() {
@@ -255,7 +253,8 @@ public class TicketServiceTest {
         ticketResponses.add(new TicketResponse());
 
         when(ticketRepository.findByDescriptionContaining(description)).thenReturn(tickets);
-        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class))).thenReturn(ticketResponses.get(0));
+        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class)))
+                .thenReturn(ticketResponses.get(0));
 
         List<TicketResponse> result = ticketService.searchByDescription(description);
 
@@ -273,7 +272,8 @@ public class TicketServiceTest {
         ticketResponses.add(new TicketResponse());
 
         when(ticketRepository.findTicketsByCustomerLike(customer)).thenReturn(tickets);
-        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class))).thenReturn(ticketResponses.get(0));
+        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class)))
+                .thenReturn(ticketResponses.get(0));
 
         List<TicketResponse> result = ticketService.searchByCustomer(customer);
 

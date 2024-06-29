@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class TicketRequest {
     @NotBlank(message = "Description cannot be empty")
     private String description;
+
     private String status;
     private Long agentId;
     private Long customerId;

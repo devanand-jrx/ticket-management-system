@@ -13,6 +13,7 @@ public class CustomerRequest {
 
     @NotBlank(message = "Name cannot be empty")
     private String name;
+
     @NotBlank(message = "Email cannot be empty")
     @Email
     private String email;

@@ -1,10 +1,19 @@
 package com.devanand.tms.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 import com.devanand.tms.contract.request.AgentRequest;
 import com.devanand.tms.contract.response.AgentResponse;
 import com.devanand.tms.exception.AgentNotFoundException;
 import com.devanand.tms.model.Agent;
 import com.devanand.tms.repository.AgentRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -12,52 +21,39 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-
 public class AgentServiceTest {
 
-    @InjectMocks
-    private AgentService agentService;
+    @InjectMocks private AgentService agentService;
 
-    @Mock
-    private AgentRepository agentRepository;
+    @Mock private AgentRepository agentRepository;
 
-    @Mock
-    private ModelMapper modelMapper;
+    @Mock private ModelMapper modelMapper;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
-
     @Test
     void testCreateAgent() {
         AgentRequest agentRequest = new AgentRequest("Name", "name@example.org", "abcdd");
-        Agent agent = Agent.builder()
-                .name(agentRequest.getName())
-                .email(agentRequest.getEmail())
-                .password(agentRequest.getPassword())
-                .build();
-        AgentResponse expectedResponse = AgentResponse.builder()
-                .id(1L)
-                .name(agent.getName())
-                .email(agent.getEmail())
-                .build();
+        Agent agent =
+                Agent.builder()
+                        .name(agentRequest.getName())
+                        .email(agentRequest.getEmail())
+                        .password(agentRequest.getPassword())
+                        .build();
+        AgentResponse expectedResponse =
+                AgentResponse.builder()
+                        .id(1L)
+                        .name(agent.getName())
+                        .email(agent.getEmail())
+                        .build();
 
         when(agentRepository.save(any(Agent.class))).thenReturn(agent);
         when(modelMapper.map(agent, AgentResponse.class)).thenReturn(expectedResponse);
 
         AgentResponse actualResponse = agentService.createAgent(agentRequest);
-
 
         assertEquals(expectedResponse, actualResponse);
         verify(agentRepository, times(1)).save(any(Agent.class));
@@ -72,7 +68,8 @@ public class AgentServiceTest {
         agentResponses.add(new AgentResponse());
 
         when(agentRepository.findAll()).thenReturn(agents);
-        when(modelMapper.map(any(Agent.class), eq(AgentResponse.class))).thenReturn(agentResponses.get(0));
+        when(modelMapper.map(any(Agent.class), eq(AgentResponse.class)))
+                .thenReturn(agentResponses.get(0));
 
         List<AgentResponse> result = agentService.getAllAgents();
 
@@ -110,7 +107,8 @@ public class AgentServiceTest {
     @Test
     void testUpdateAgent() {
         Long agentId = 1L;
-        AgentRequest agentRequest = new AgentRequest("Updated Name", "updated.email@example.org", "updatedpassword");
+        AgentRequest agentRequest =
+                new AgentRequest("Updated Name", "updated.email@example.org", "updatedpassword");
         Agent agent = new Agent();
         Agent updatedAgent = new Agent();
         AgentResponse agentResponse = new AgentResponse();
@@ -131,11 +129,14 @@ public class AgentServiceTest {
     @Test
     void testUpdateAgent_ThrowsException() {
         Long agentId = 1L;
-        AgentRequest agentRequest = new AgentRequest("Updated Name", "updated.email@example.org", "updatedpassword");
+        AgentRequest agentRequest =
+                new AgentRequest("Updated Name", "updated.email@example.org", "updatedpassword");
 
         when(agentRepository.findById(agentId)).thenReturn(Optional.empty());
 
-        assertThrows(AgentNotFoundException.class, () -> agentService.updateAgent(agentId, agentRequest));
+        assertThrows(
+                AgentNotFoundException.class,
+                () -> agentService.updateAgent(agentId, agentRequest));
         verify(agentRepository).findById(agentId);
     }
 

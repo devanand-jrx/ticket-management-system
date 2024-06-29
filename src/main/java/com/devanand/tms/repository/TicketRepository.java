@@ -11,5 +11,4 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     @Query("SELECT t FROM Ticket t WHERE t.customer.name LIKE :namePattern")
     List<Ticket> findTicketsByCustomerLike(@Param("namePattern") String namePattern);
-
 }
