@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AgentService {
-    @Autowired private AgentRepository agentRepository;
+    @Autowired private final AgentRepository agentRepository;
 
     private final ModelMapper modelMapper;
 

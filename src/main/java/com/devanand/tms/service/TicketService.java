@@ -22,13 +22,13 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class TicketService {
-    @Autowired private TicketRepository ticketRepository;
+    @Autowired private final TicketRepository ticketRepository;
 
-    @Autowired private AgentRepository agentRepository;
+    @Autowired private final AgentRepository agentRepository;
 
-    @Autowired private CustomerRepository customerRepository;
+    @Autowired private final CustomerRepository customerRepository;
 
-    @Autowired private ModelMapper modelMapper;
+    @Autowired private final ModelMapper modelMapper;
 
     public TicketResponse createTicket(TicketRequest ticketRequest) {
         Agent agent =

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin/agents")
-public class AdminController {
+public class AgentController {
 
     @Autowired private AgentService agentService;
 

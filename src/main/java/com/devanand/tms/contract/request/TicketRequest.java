@@ -1,5 +1,6 @@
 package com.devanand.tms.contract.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TicketRequest {
+    @NotBlank(message = "Description cannot be empty")
     private String description;
     private String status;
     private Long agentId;

@@ -9,9 +9,7 @@ import org.springframework.data.repository.query.Param;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByDescriptionContaining(String description);
 
-    //    List<Ticket> findByCustomerContaining(String customer);
     @Query("SELECT t FROM Ticket t WHERE t.customer.name LIKE :namePattern")
     List<Ticket> findTicketsByCustomerLike(@Param("namePattern") String namePattern);
 
-    List<Ticket> findByCustomerId(Long customerId);
 }
