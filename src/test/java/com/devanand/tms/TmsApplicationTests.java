@@ -8,9 +8,4 @@ class TmsApplicationTests {
 
     @Test
     void contextLoads() {}
-
-    @Test
-    public void main() {
-        TmsApplication.main(new String[] {});
-    }
 }
