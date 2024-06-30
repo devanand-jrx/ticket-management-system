@@ -108,7 +108,7 @@ public class TicketService {
                         .findById(agentId)
                         .orElseThrow(
                                 () ->
-                                        new TicketNotFoundException(
+                                        new AgentNotFoundException(
                                                 "Agent not found with id " + agentId));
         ticket.setAgent(agent);
         Ticket savedTicket = ticketRepository.save(ticket);

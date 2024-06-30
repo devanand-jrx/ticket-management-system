@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,6 +12,8 @@ import static org.mockito.Mockito.when;
 import com.devanand.tms.constant.Status;
 import com.devanand.tms.contract.request.TicketRequest;
 import com.devanand.tms.contract.response.TicketResponse;
+import com.devanand.tms.exception.AgentNotFoundException;
+import com.devanand.tms.exception.CustomerNotFoundException;
 import com.devanand.tms.exception.TicketNotFoundException;
 import com.devanand.tms.model.Agent;
 import com.devanand.tms.model.Customer;
@@ -78,6 +81,44 @@ public class TicketServiceTest {
         verify(customerRepository).findById(ticketRequest.getCustomerId());
         verify(ticketRepository).save(any(Ticket.class));
         verify(modelMapper).map(ticket, TicketResponse.class);
+    }
+
+    @Test
+    void testCreateTicket_AgentNotFoundException() {
+        TicketRequest ticketRequest = new TicketRequest("Description", "OPEN", 1L, 1L);
+
+        when(agentRepository.findById(ticketRequest.getAgentId())).thenReturn(Optional.empty());
+
+        AgentNotFoundException exception =
+                assertThrows(
+                        AgentNotFoundException.class,
+                        () -> ticketService.createTicket(ticketRequest));
+
+        assertEquals(
+                "Agent not found with id " + ticketRequest.getAgentId(), exception.getMessage());
+        verify(agentRepository).findById(ticketRequest.getAgentId());
+        verify(customerRepository, never()).findById(ticketRequest.getCustomerId());
+    }
+
+    @Test
+    void testCreateTicket_CustomerNotFoundException() {
+        TicketRequest ticketRequest = new TicketRequest("Description", "OPEN", 1L, 1L);
+        Agent agent = new Agent();
+
+        when(agentRepository.findById(ticketRequest.getAgentId())).thenReturn(Optional.of(agent));
+        when(customerRepository.findById(ticketRequest.getCustomerId()))
+                .thenReturn(Optional.empty());
+
+        CustomerNotFoundException exception =
+                assertThrows(
+                        CustomerNotFoundException.class,
+                        () -> ticketService.createTicket(ticketRequest));
+
+        assertEquals(
+                "Customer not found with id " + ticketRequest.getCustomerId(),
+                exception.getMessage());
+        verify(agentRepository).findById(ticketRequest.getAgentId());
+        verify(customerRepository).findById(ticketRequest.getCustomerId());
     }
 
     @Test
@@ -226,6 +267,42 @@ public class TicketServiceTest {
     }
 
     @Test
+    void testAssignTicketToAgent_TicketNotFoundException() {
+        Long ticketId = 1L;
+        Long agentId = 1L;
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
+
+        TicketNotFoundException exception =
+                assertThrows(
+                        TicketNotFoundException.class,
+                        () -> ticketService.assignTicketToAgent(ticketId, agentId));
+
+        assertEquals("Ticket not found with id " + ticketId, exception.getMessage());
+        verify(ticketRepository).findById(ticketId);
+        verify(agentRepository, never()).findById(agentId);
+    }
+
+    @Test
+    void testAssignTicketToAgent_AgentNotFoundException() {
+        Long ticketId = 1L;
+        Long agentId = 1L;
+        Ticket ticket = new Ticket();
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(agentRepository.findById(agentId)).thenReturn(Optional.empty());
+
+        AgentNotFoundException exception =
+                assertThrows(
+                        AgentNotFoundException.class,
+                        () -> ticketService.assignTicketToAgent(ticketId, agentId));
+
+        assertEquals("Agent not found with id " + agentId, exception.getMessage());
+        verify(ticketRepository).findById(ticketId);
+        verify(agentRepository).findById(agentId);
+    }
+
+    @Test
     void testUpdateTicketStatus() {
         Long ticketId = 1L;
         String status = "CLOSED";
@@ -242,6 +319,22 @@ public class TicketServiceTest {
         verify(ticketRepository).findById(ticketId);
         verify(ticketRepository).save(ticket);
         verify(modelMapper).map(ticket, TicketResponse.class);
+    }
+
+    @Test
+    void testUpdateTicketStatus_TicketNotFoundException() {
+        Long ticketId = 1L;
+        String status = "CLOSED";
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
+
+        TicketNotFoundException exception =
+                assertThrows(
+                        TicketNotFoundException.class,
+                        () -> ticketService.updateTicketStatus(ticketId, status));
+
+        assertEquals("Ticket not found with id " + ticketId, exception.getMessage());
+        verify(ticketRepository).findById(ticketId);
     }
 
     @Test
@@ -280,5 +373,75 @@ public class TicketServiceTest {
         assertEquals(ticketResponses.size(), result.size());
         verify(ticketRepository).findTicketsByCustomerLike(customer);
         verify(modelMapper, times(tickets.size())).map(any(Ticket.class), eq(TicketResponse.class));
+    }
+
+    @Test
+    void testConvertToEntity() {
+        TicketRequest ticketRequest = new TicketRequest("Description", "OPEN", 1L, 1L);
+        Agent agent = new Agent();
+        Customer customer = new Customer();
+
+        when(agentRepository.findById(ticketRequest.getAgentId())).thenReturn(Optional.of(agent));
+        when(customerRepository.findById(ticketRequest.getCustomerId()))
+                .thenReturn(Optional.of(customer));
+
+        Ticket result = ticketService.convertToEntity(ticketRequest);
+
+        assertEquals(ticketRequest.getDescription(), result.getDescription());
+        assertEquals(Status.valueOf(ticketRequest.getStatus()), result.getStatus());
+        assertEquals(agent, result.getAgent());
+        assertEquals(customer, result.getCustomer());
+        verify(agentRepository).findById(ticketRequest.getAgentId());
+        verify(customerRepository).findById(ticketRequest.getCustomerId());
+    }
+
+    @Test
+    void testConvertToEntity_AgentNotFound() {
+        TicketRequest ticketRequest = new TicketRequest("Description", "OPEN", 1L, 1L);
+
+        when(agentRepository.findById(ticketRequest.getAgentId())).thenReturn(Optional.empty());
+
+        assertThrows(
+                AgentNotFoundException.class, () -> ticketService.convertToEntity(ticketRequest));
+        verify(agentRepository).findById(ticketRequest.getAgentId());
+    }
+
+    @Test
+    void testConvertToEntity_CustomerNotFound() {
+        TicketRequest ticketRequest = new TicketRequest("Description", "OPEN", 1L, 1L);
+        Agent agent = new Agent();
+
+        when(agentRepository.findById(ticketRequest.getAgentId())).thenReturn(Optional.of(agent));
+        when(customerRepository.findById(ticketRequest.getCustomerId()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                CustomerNotFoundException.class,
+                () -> ticketService.convertToEntity(ticketRequest));
+        verify(agentRepository).findById(ticketRequest.getAgentId());
+        verify(customerRepository).findById(ticketRequest.getCustomerId());
+    }
+
+    @Test
+    void testConvertToResponse() {
+        Agent agent = new Agent(1L, "John", "Doe", "john.doe@example.com", new ArrayList<>());
+        Customer customer = new Customer(1L, "Jane", "jane.doe@example.com", new ArrayList<>());
+
+        Ticket ticket =
+                Ticket.builder()
+                        .id(1L)
+                        .description("Description")
+                        .status(Status.OPEN)
+                        .agent(agent)
+                        .customer(customer)
+                        .build();
+
+        TicketResponse result = ticketService.convertToResponse(ticket);
+
+        assertEquals(ticket.getId(), result.getId());
+        assertEquals(ticket.getDescription(), result.getDescription());
+        assertEquals(String.valueOf(ticket.getStatus()), result.getStatus());
+        assertEquals(ticket.getAgent().getId(), result.getAgentId());
+        assertEquals(ticket.getCustomer().getId(), result.getCustomerId());
     }
 }
