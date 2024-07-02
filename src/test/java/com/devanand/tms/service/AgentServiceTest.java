@@ -1,16 +1,28 @@
 package com.devanand.tms.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.devanand.tms.contract.request.AgentRequest;
-import com.devanand.tms.contract.response.AgentResponse;
+import com.devanand.tms.constant.Status;
+import com.devanand.tms.contract.request.CustomerRequest;
+import com.devanand.tms.contract.request.TicketUpdateRequest;
+import com.devanand.tms.contract.response.CustomerResponse;
+import com.devanand.tms.contract.response.TicketResponse;
 import com.devanand.tms.exception.AgentNotFoundException;
+import com.devanand.tms.exception.CustomerNotFoundException;
+import com.devanand.tms.exception.TicketNotFoundException;
 import com.devanand.tms.model.Agent;
+import com.devanand.tms.model.Customer;
+import com.devanand.tms.model.Ticket;
+import com.devanand.tms.repository.AdminRepository;
 import com.devanand.tms.repository.AgentRepository;
+import com.devanand.tms.repository.TicketRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +38,8 @@ public class AgentServiceTest {
     @InjectMocks private AgentService agentService;
 
     @Mock private AgentRepository agentRepository;
+    @Mock private TicketRepository ticketRepository;
+    @Mock private AdminRepository adminRepository;
 
     @Mock private ModelMapper modelMapper;
 
@@ -35,130 +49,362 @@ public class AgentServiceTest {
     }
 
     @Test
-    void testCreateAgent() {
-        AgentRequest agentRequest = new AgentRequest("Name", "name@example.org", "abcdd");
-        Agent agent =
-                Agent.builder()
-                        .name(agentRequest.getName())
-                        .email(agentRequest.getEmail())
-                        .password(agentRequest.getPassword())
+    void testCreateCustomer() {
+        CustomerRequest customerRequest = new CustomerRequest("Name", "name@example.com");
+        Customer customer =
+                Customer.builder()
+                        .name(customerRequest.getName())
+                        .email(customerRequest.getEmail())
                         .build();
-        AgentResponse expectedResponse =
-                AgentResponse.builder()
+        CustomerResponse expectedResponse =
+                CustomerResponse.builder()
                         .id(1L)
-                        .name(agent.getName())
-                        .email(agent.getEmail())
+                        .name(customer.getName())
+                        .email(customer.getEmail())
                         .build();
 
-        when(agentRepository.save(any(Agent.class))).thenReturn(agent);
-        when(modelMapper.map(agent, AgentResponse.class)).thenReturn(expectedResponse);
+        when(agentRepository.save(any(Customer.class))).thenReturn(customer);
+        when(modelMapper.map(customer, CustomerResponse.class)).thenReturn(expectedResponse);
 
-        AgentResponse actualResponse = agentService.createAgent(agentRequest);
+        CustomerResponse actualResponse = agentService.createCustomer(customerRequest);
 
         assertEquals(expectedResponse, actualResponse);
-        verify(agentRepository, times(1)).save(any(Agent.class));
-        verify(modelMapper, times(1)).map(agent, AgentResponse.class);
+        verify(agentRepository, times(1)).save(any(Customer.class));
+        verify(modelMapper, times(1)).map(customer, CustomerResponse.class);
     }
 
     @Test
-    void testGetAllAgents() {
-        List<Agent> agents = new ArrayList<>();
-        agents.add(new Agent());
-        List<AgentResponse> agentResponses = new ArrayList<>();
-        agentResponses.add(new AgentResponse());
+    void testGetAllCustomers() {
+        List<Customer> customers = new ArrayList<>();
+        customers.add(new Customer());
+        List<CustomerResponse> customerResponses = new ArrayList<>();
+        customerResponses.add(new CustomerResponse());
 
-        when(agentRepository.findAll()).thenReturn(agents);
-        when(modelMapper.map(any(Agent.class), eq(AgentResponse.class)))
-                .thenReturn(agentResponses.get(0));
+        when(agentRepository.findAll()).thenReturn(customers);
+        when(modelMapper.map(any(Customer.class), eq(CustomerResponse.class)))
+                .thenReturn(customerResponses.get(0));
 
-        List<AgentResponse> result = agentService.getAllAgents();
+        List<CustomerResponse> result = agentService.getAllCustomers();
 
-        assertEquals(agentResponses.size(), result.size());
+        assertEquals(customerResponses.size(), result.size());
         verify(agentRepository).findAll();
-        verify(modelMapper, times(agents.size())).map(any(Agent.class), eq(AgentResponse.class));
+        verify(modelMapper, times(customers.size()))
+                .map(any(Customer.class), eq(CustomerResponse.class));
     }
 
     @Test
-    void testGetAgentById() {
-        Long agentId = 1L;
-        Agent agent = new Agent();
-        AgentResponse agentResponse = new AgentResponse();
+    void testGetCustomerById() {
+        Long customerId = 1L;
+        Customer customer = new Customer();
+        CustomerResponse customerResponse = new CustomerResponse();
 
-        when(agentRepository.findById(agentId)).thenReturn(Optional.of(agent));
-        when(modelMapper.map(agent, AgentResponse.class)).thenReturn(agentResponse);
+        when(agentRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        when(modelMapper.map(customer, CustomerResponse.class)).thenReturn(customerResponse);
 
-        AgentResponse result = agentService.getAgentById(agentId);
+        CustomerResponse result = agentService.getCustomerById(customerId);
 
-        assertEquals(agentResponse, result);
-        verify(agentRepository).findById(agentId);
-        verify(modelMapper).map(agent, AgentResponse.class);
+        assertEquals(customerResponse, result);
+        verify(agentRepository).findById(customerId);
+        verify(modelMapper).map(customer, CustomerResponse.class);
     }
 
     @Test
-    void testGetAgentById_ThrowsException() {
-        Long agentId = 1L;
+    void testGetCustomerById_ThrowsException() {
+        Long customerId = 1L;
 
-        when(agentRepository.findById(agentId)).thenReturn(Optional.empty());
+        when(agentRepository.findById(customerId)).thenReturn(Optional.empty());
 
-        assertThrows(AgentNotFoundException.class, () -> agentService.getAgentById(agentId));
-        verify(agentRepository).findById(agentId);
+        assertThrows(
+                CustomerNotFoundException.class, () -> agentService.getCustomerById(customerId));
+        verify(agentRepository).findById(customerId);
     }
 
     @Test
-    void testUpdateAgent() {
-        Long agentId = 1L;
-        AgentRequest agentRequest =
-                new AgentRequest("Updated Name", "updated.email@example.org", "updatedpassword");
-        Agent agent = new Agent();
-        Agent updatedAgent = new Agent();
-        AgentResponse agentResponse = new AgentResponse();
+    void testUpdateCustomer() {
+        Long customerId = 1L;
+        CustomerRequest customerRequest =
+                new CustomerRequest("Updated Name", "updated.email@example.com");
+        Customer customer = new Customer();
+        Customer updatedCustomer = new Customer();
+        CustomerResponse customerResponse = new CustomerResponse();
 
-        when(agentRepository.findById(agentId)).thenReturn(Optional.of(agent));
-        when(agentRepository.save(agent)).thenReturn(updatedAgent);
-        when(modelMapper.map(updatedAgent, AgentResponse.class)).thenReturn(agentResponse);
+        when(agentRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        when(agentRepository.save(customer)).thenReturn(updatedCustomer);
+        when(modelMapper.map(updatedCustomer, CustomerResponse.class)).thenReturn(customerResponse);
 
-        AgentResponse result = agentService.updateAgent(agentId, agentRequest);
+        CustomerResponse result = agentService.updateCustomer(customerId, customerRequest);
 
-        assertEquals(agentResponse, result);
-        verify(agentRepository).findById(agentId);
-        verify(agentRepository).save(agent);
-        verify(modelMapper).map(agentRequest, agent);
-        verify(modelMapper).map(updatedAgent, AgentResponse.class);
+        assertEquals(customerResponse, result);
+        verify(agentRepository).findById(customerId);
+        verify(agentRepository).save(customer);
+        verify(modelMapper).map(customerRequest, customer);
+        verify(modelMapper).map(updatedCustomer, CustomerResponse.class);
     }
 
     @Test
-    void testUpdateAgent_ThrowsException() {
-        Long agentId = 1L;
-        AgentRequest agentRequest =
-                new AgentRequest("Updated Name", "updated.email@example.org", "updatedpassword");
+    void testUpdateCustomer_ThrowsException() {
+        Long customerId = 1L;
+        CustomerRequest customerRequest =
+                new CustomerRequest("Updated Name", "updated.email@example.com");
 
-        when(agentRepository.findById(agentId)).thenReturn(Optional.empty());
+        when(agentRepository.findById(customerId)).thenReturn(Optional.empty());
+
+        assertThrows(
+                CustomerNotFoundException.class,
+                () -> agentService.updateCustomer(customerId, customerRequest));
+        verify(agentRepository).findById(customerId);
+    }
+
+    @Test
+    void testDeleteCustomer() {
+        Long customerId = 1L;
+
+        when(agentRepository.existsById(customerId)).thenReturn(true);
+
+        agentService.deleteCustomer(customerId);
+
+        verify(agentRepository).existsById(customerId);
+        verify(agentRepository).deleteById(customerId);
+    }
+
+    @Test
+    void testDeleteCustomer_ThrowsException() {
+        Long customerId = 1L;
+
+        when(agentRepository.existsById(customerId)).thenReturn(false);
+
+        assertThrows(
+                CustomerNotFoundException.class, () -> agentService.deleteCustomer(customerId));
+        verify(agentRepository).existsById(customerId);
+    }
+
+    // Additional tests for ticket operations
+
+    @Test
+    void testGetAllTickets() {
+        List<Ticket> tickets = new ArrayList<>();
+        tickets.add(new Ticket());
+        List<TicketResponse> ticketResponses = new ArrayList<>();
+        ticketResponses.add(new TicketResponse());
+
+        when(ticketRepository.findAll()).thenReturn(tickets);
+        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class)))
+                .thenReturn(ticketResponses.get(0));
+
+        List<TicketResponse> result = agentService.getAllTickets();
+
+        assertEquals(ticketResponses.size(), result.size());
+        verify(ticketRepository).findAll();
+        verify(modelMapper, times(tickets.size())).map(any(Ticket.class), eq(TicketResponse.class));
+    }
+
+    @Test
+    void testGetTicketById() {
+        Long ticketId = 1L;
+        Ticket ticket = new Ticket();
+        TicketResponse ticketResponse = new TicketResponse();
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(modelMapper.map(ticket, TicketResponse.class)).thenReturn(ticketResponse);
+
+        TicketResponse result = agentService.getTicketById(ticketId);
+
+        assertEquals(ticketResponse, result);
+        verify(ticketRepository).findById(ticketId);
+        verify(modelMapper).map(ticket, TicketResponse.class);
+    }
+
+    @Test
+    void testGetTicketById_ThrowsException() {
+        Long ticketId = 1L;
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
+
+        assertThrows(TicketNotFoundException.class, () -> agentService.getTicketById(ticketId));
+        verify(ticketRepository).findById(ticketId);
+    }
+
+    @Test
+    void testUpdateTicket() {
+        Long ticketId = 1L;
+        TicketUpdateRequest ticketUpdateRequest = new TicketUpdateRequest("Updated Description");
+        Ticket ticket = new Ticket();
+        Ticket updatedTicket = new Ticket();
+        TicketResponse ticketResponse = new TicketResponse();
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.save(ticket)).thenReturn(updatedTicket);
+        when(modelMapper.map(updatedTicket, TicketResponse.class)).thenReturn(ticketResponse);
+
+        TicketResponse result = agentService.updateTicket(ticketId, ticketUpdateRequest);
+
+        assertEquals(ticketResponse, result);
+        verify(ticketRepository).findById(ticketId);
+        verify(ticketRepository).save(ticket);
+        verify(modelMapper).map(ticketUpdateRequest, ticket);
+        verify(modelMapper).map(updatedTicket, TicketResponse.class);
+    }
+
+    @Test
+    void testUpdateTicket_ThrowsException() {
+        Long ticketId = 1L;
+        TicketUpdateRequest ticketUpdateRequest = new TicketUpdateRequest("Updated Description");
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
+
+        assertThrows(
+                TicketNotFoundException.class,
+                () -> agentService.updateTicket(ticketId, ticketUpdateRequest));
+        verify(ticketRepository).findById(ticketId);
+    }
+
+    @Test
+    void testDeleteTicket() {
+        Long ticketId = 1L;
+
+        when(ticketRepository.existsById(ticketId)).thenReturn(true);
+
+        agentService.deleteTicket(ticketId);
+
+        verify(ticketRepository).existsById(ticketId);
+        verify(ticketRepository).deleteById(ticketId);
+    }
+
+    @Test
+    void testDeleteTicket_ThrowsException() {
+        Long ticketId = 1L;
+
+        when(ticketRepository.existsById(ticketId)).thenReturn(false);
+
+        assertThrows(TicketNotFoundException.class, () -> agentService.deleteTicket(ticketId));
+        verify(ticketRepository).existsById(ticketId);
+    }
+
+    @Test
+    void testAssignTicketToAgent() {
+        Long ticketId = 1L;
+        Long agentId = 1L;
+        Customer customer = Customer.builder().id(1L).build(); // Mocked or created customer
+        Ticket ticket = Ticket.builder().id(ticketId).customer(customer).build();
+        Agent agent = Agent.builder().id(agentId).build();
+        Ticket updatedTicket =
+                Ticket.builder().id(ticketId).customer(customer).agent(agent).build();
+        TicketResponse ticketResponse =
+                TicketResponse.builder().id(ticketId).agentId(agentId).build();
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(adminRepository.findById(agentId)).thenReturn(Optional.of(agent));
+        when(ticketRepository.save(ticket)).thenReturn(updatedTicket);
+        when(modelMapper.map(updatedTicket, TicketResponse.class)).thenReturn(ticketResponse);
+
+        TicketResponse result = agentService.assignTicketToAgent(ticketId, agentId);
+
+        assertNotNull(result);
+        assertEquals(ticketId, result.getId());
+        assertEquals(agentId, result.getAgentId());
+
+        verify(ticketRepository).findById(ticketId);
+        verify(adminRepository).findById(agentId);
+        verify(ticketRepository).save(ticket);
+    }
+
+    @Test
+    void testAssignTicketToAgent_TicketNotFound() {
+        Long ticketId = 1L;
+        Long agentId = 1L;
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
+
+        assertThrows(
+                TicketNotFoundException.class,
+                () -> agentService.assignTicketToAgent(ticketId, agentId));
+        verify(ticketRepository).findById(ticketId);
+    }
+
+    @Test
+    void testAssignTicketToAgent_AgentNotFound() {
+        Long ticketId = 1L;
+        Long agentId = 1L;
+        Ticket ticket = new Ticket();
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(adminRepository.findById(agentId)).thenReturn(Optional.empty());
 
         assertThrows(
                 AgentNotFoundException.class,
-                () -> agentService.updateAgent(agentId, agentRequest));
-        verify(agentRepository).findById(agentId);
+                () -> agentService.assignTicketToAgent(ticketId, agentId));
+        verify(ticketRepository).findById(ticketId);
+        verify(adminRepository).findById(agentId);
     }
 
     @Test
-    void testDeleteAgent() {
-        Long agentId = 1L;
+    void testUpdateTicketStatus() {
+        Long ticketId = 1L;
+        String status = "IN_PROGRESS";
+        Ticket ticket = new Ticket();
+        Ticket updatedTicket = new Ticket();
+        updatedTicket.setStatus(Status.valueOf(status));
+        TicketResponse ticketResponse = new TicketResponse();
 
-        when(agentRepository.existsById(agentId)).thenReturn(true);
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(ticketRepository.save(ticket)).thenReturn(updatedTicket);
+        when(modelMapper.map(updatedTicket, TicketResponse.class)).thenReturn(ticketResponse);
 
-        agentService.deleteAgent(agentId);
+        TicketResponse result = agentService.updateTicketStatus(ticketId, status);
 
-        verify(agentRepository).existsById(agentId);
-        verify(agentRepository).deleteById(agentId);
+        assertEquals(ticketResponse, result);
+        verify(ticketRepository).findById(ticketId);
+        verify(ticketRepository).save(ticket);
     }
 
     @Test
-    void testDeleteAgent_ThrowsException() {
-        Long agentId = 1L;
+    void testUpdateTicketStatus_ThrowsException() {
+        Long ticketId = 1L;
+        String status = "IN_PROGRESS";
 
-        when(agentRepository.existsById(agentId)).thenReturn(false);
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
 
-        assertThrows(AgentNotFoundException.class, () -> agentService.deleteAgent(agentId));
-        verify(agentRepository).existsById(agentId);
+        assertThrows(
+                TicketNotFoundException.class,
+                () -> agentService.updateTicketStatus(ticketId, status));
+        verify(ticketRepository).findById(ticketId);
+    }
+
+    @Test
+    void testSearchByDescription() {
+        String description = "test";
+        List<Ticket> tickets = new ArrayList<>();
+        tickets.add(new Ticket());
+        List<TicketResponse> ticketResponses = new ArrayList<>();
+        ticketResponses.add(new TicketResponse());
+
+        when(ticketRepository.findByDescriptionContaining(description)).thenReturn(tickets);
+        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class)))
+                .thenReturn(ticketResponses.get(0));
+
+        List<TicketResponse> result = agentService.searchByDescription(description);
+
+        assertEquals(ticketResponses.size(), result.size());
+        verify(ticketRepository).findByDescriptionContaining(description);
+        verify(modelMapper, times(tickets.size())).map(any(Ticket.class), eq(TicketResponse.class));
+    }
+
+    @Test
+    void testSearchByCustomer() {
+        String customer = "test";
+        List<Ticket> tickets = new ArrayList<>();
+        tickets.add(new Ticket());
+        List<TicketResponse> ticketResponses = new ArrayList<>();
+        ticketResponses.add(new TicketResponse());
+
+        when(ticketRepository.findTicketsByCustomerLike(customer)).thenReturn(tickets);
+        when(modelMapper.map(any(Ticket.class), eq(TicketResponse.class)))
+                .thenReturn(ticketResponses.get(0));
+
+        List<TicketResponse> result = agentService.searchByCustomer(customer);
+
+        assertEquals(ticketResponses.size(), result.size());
+        verify(ticketRepository).findTicketsByCustomerLike(customer);
+        verify(modelMapper, times(tickets.size())).map(any(Ticket.class), eq(TicketResponse.class));
     }
 }

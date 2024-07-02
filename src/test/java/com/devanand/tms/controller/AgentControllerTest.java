@@ -2,7 +2,7 @@ package com.devanand.tms.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,8 +11,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.devanand.tms.contract.request.AgentRequest;
-import com.devanand.tms.contract.response.AgentResponse;
+import com.devanand.tms.contract.request.CustomerRequest;
+import com.devanand.tms.contract.request.TicketUpdateRequest;
+import com.devanand.tms.contract.response.CustomerResponse;
+import com.devanand.tms.contract.response.TicketResponse;
 import com.devanand.tms.service.AgentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -36,66 +38,144 @@ public class AgentControllerTest {
     @Autowired private ObjectMapper objectMapper;
 
     @Test
-    public void testCreateAgent() throws Exception {
-        AgentRequest agentRequest = new AgentRequest();
-        AgentResponse agentResponse = new AgentResponse();
+    public void testCreateCustomer() throws Exception {
+        CustomerRequest customerRequest = new CustomerRequest();
+        CustomerResponse customerResponse = new CustomerResponse();
 
-        when(agentService.createAgent(any(AgentRequest.class))).thenReturn(agentResponse);
-
-        mockMvc.perform(
-                        post("/admin/agents")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(agentRequest)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(agentResponse)));
-    }
-
-    @Test
-    public void testGetAllAgents() throws Exception {
-        List<AgentResponse> agentResponses = new ArrayList<>();
-
-        when(agentService.getAllAgents()).thenReturn(agentResponses);
-
-        mockMvc.perform(get("/admin/agents"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(agentResponses)));
-    }
-
-    @Test
-    public void testGetAgentById() throws Exception {
-        Long agentId = 1L;
-        AgentResponse agentResponse = new AgentResponse();
-
-        when(agentService.getAgentById(agentId)).thenReturn(agentResponse);
-
-        mockMvc.perform(get("/admin/agents/" + agentId))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(agentResponse)));
-    }
-
-    @Test
-    public void testUpdateAgent() throws Exception {
-        Long agentId = 1L;
-        AgentRequest agentRequest = new AgentRequest();
-        AgentResponse agentResponse = new AgentResponse();
-
-        when(agentService.updateAgent(eq(agentId), any(AgentRequest.class)))
-                .thenReturn(agentResponse);
+        when(agentService.createCustomer(any(CustomerRequest.class))).thenReturn(customerResponse);
 
         mockMvc.perform(
-                        put("/admin/agents/" + agentId)
+                        post("/agents/customers")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(agentRequest)))
+                                .content(objectMapper.writeValueAsString(customerRequest)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(agentResponse)));
+                .andExpect(content().json(objectMapper.writeValueAsString(customerResponse)));
     }
 
     @Test
-    public void testDeleteAgent() throws Exception {
+    public void testGetAllCustomers() throws Exception {
+        List<CustomerResponse> customerResponses = new ArrayList<>();
+
+        when(agentService.getAllCustomers()).thenReturn(customerResponses);
+
+        mockMvc.perform(get("/agents/customers"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(customerResponses)));
+    }
+
+    @Test
+    public void testGetCustomerById() throws Exception {
+        Long customerId = 1L;
+        CustomerResponse customerResponse = new CustomerResponse();
+
+        when(agentService.getCustomerById(customerId)).thenReturn(customerResponse);
+
+        mockMvc.perform(get("/agents/customers/{customerId}", customerId))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(customerResponse)));
+    }
+
+    @Test
+    public void testUpdateCustomer() throws Exception {
+        Long customerId = 1L;
+        CustomerRequest customerRequest = new CustomerRequest();
+        CustomerResponse customerResponse = new CustomerResponse();
+
+        when(agentService.updateCustomer(eq(customerId), any(CustomerRequest.class)))
+                .thenReturn(customerResponse);
+
+        mockMvc.perform(
+                        put("/agents/customers/{customerId}", customerId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(customerRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(customerResponse)));
+    }
+
+    @Test
+    public void testDeleteCustomer() throws Exception {
+        Long customerId = 1L;
+
+        mockMvc.perform(delete("/agents/customers/{customerId}", customerId))
+                .andExpect(status().isOk());
+
+        verify(agentService).deleteCustomer(eq(customerId));
+    }
+
+    @Test
+    public void testGetAllTickets() throws Exception {
+        List<TicketResponse> ticketResponses = new ArrayList<>();
+
+        when(agentService.getAllTickets()).thenReturn(ticketResponses);
+
+        mockMvc.perform(get("/agents/ticket"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponses)));
+    }
+
+    @Test
+    public void testGetTicketById() throws Exception {
+        Long ticketId = 1L;
+        TicketResponse ticketResponse = new TicketResponse();
+
+        when(agentService.getTicketById(ticketId)).thenReturn(ticketResponse);
+
+        mockMvc.perform(get("/agents/ticket/{ticketId}", ticketId))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponse)));
+    }
+
+    @Test
+    public void testUpdateTicket() throws Exception {
+        Long ticketId = 1L;
+        TicketUpdateRequest ticketUpdateRequest = new TicketUpdateRequest();
+        TicketResponse ticketResponse = new TicketResponse();
+
+        when(agentService.updateTicket(eq(ticketId), any(TicketUpdateRequest.class)))
+                .thenReturn(ticketResponse);
+
+        mockMvc.perform(
+                        put("/agents/ticket/{ticketId}", ticketId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(ticketUpdateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponse)));
+    }
+
+    @Test
+    public void testAssignTicketToAgent() throws Exception {
+        Long ticketId = 1L;
         Long agentId = 1L;
+        TicketResponse ticketResponse = new TicketResponse();
 
-        doNothing().when(agentService).deleteAgent(agentId);
+        when(agentService.assignTicketToAgent(ticketId, agentId)).thenReturn(ticketResponse);
 
-        mockMvc.perform(delete("/admin/agents/" + agentId)).andExpect(status().isOk());
+        mockMvc.perform(put("/agents/ticket/{ticketId}/assign/{agentId}", ticketId, agentId))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponse)));
+    }
+
+    @Test
+    public void testSearchByDescription() throws Exception {
+        String description = "issue";
+        List<TicketResponse> ticketResponses = new ArrayList<>();
+
+        when(agentService.searchByDescription(description)).thenReturn(ticketResponses);
+
+        mockMvc.perform(post("/agents/ticket/search/description").param("description", description))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponses)));
+    }
+
+    @Test
+    public void testSearchByCustomer() throws Exception {
+        String customer = "John Doe";
+        List<TicketResponse> ticketResponses = new ArrayList<>();
+
+        when(agentService.searchByCustomer(customer)).thenReturn(ticketResponses);
+
+        mockMvc.perform(post("/agents/ticket/search/customer").param("customer", customer))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponses)));
     }
 }

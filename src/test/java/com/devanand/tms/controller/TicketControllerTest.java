@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.devanand.tms.contract.request.TicketRequest;
+import com.devanand.tms.contract.request.TicketUpdateRequest;
 import com.devanand.tms.contract.response.TicketResponse;
 import com.devanand.tms.service.TicketService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,13 +38,15 @@ public class TicketControllerTest {
 
     @Test
     public void testCreateTicket() throws Exception {
-        TicketRequest ticketRequest = new TicketRequest();
+        Long customerId = 1L;
+        TicketRequest ticketRequest = new TicketRequest("description", 2L, customerId);
         TicketResponse ticketResponse = new TicketResponse();
 
-        when(ticketService.createTicket(any(TicketRequest.class))).thenReturn(ticketResponse);
+        when(ticketService.createTicket(eq(customerId), any(TicketRequest.class)))
+                .thenReturn(ticketResponse);
 
         mockMvc.perform(
-                        post("/ticket")
+                        post("/ticket/{customerId}", customerId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(ticketRequest)))
                 .andExpect(status().isOk())
@@ -68,7 +71,7 @@ public class TicketControllerTest {
 
         when(ticketService.getTicketById(ticketId)).thenReturn(ticketResponse);
 
-        mockMvc.perform(get("/ticket/" + ticketId))
+        mockMvc.perform(get("/ticket/{ticketId}", ticketId))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(ticketResponse)));
     }
@@ -76,16 +79,16 @@ public class TicketControllerTest {
     @Test
     public void testUpdateTicket() throws Exception {
         Long ticketId = 1L;
-        TicketRequest ticketRequest = new TicketRequest();
+        TicketUpdateRequest ticketUpdateRequest = new TicketUpdateRequest("new description");
         TicketResponse ticketResponse = new TicketResponse();
 
-        when(ticketService.updateTicket(eq(ticketId), any(TicketRequest.class)))
+        when(ticketService.updateTicket(eq(ticketId), any(TicketUpdateRequest.class)))
                 .thenReturn(ticketResponse);
 
         mockMvc.perform(
-                        put("/ticket/" + ticketId)
+                        put("/ticket/{ticketId}", ticketId)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(ticketRequest)))
+                                .content(objectMapper.writeValueAsString(ticketUpdateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(ticketResponse)));
     }
@@ -96,43 +99,6 @@ public class TicketControllerTest {
 
         doNothing().when(ticketService).deleteTicket(ticketId);
 
-        mockMvc.perform(delete("/ticket/" + ticketId)).andExpect(status().isOk());
-    }
-
-    @Test
-    public void testAssignTicketToAgent() throws Exception {
-        Long ticketId = 1L;
-        Long agentId = 1L;
-        TicketResponse ticketResponse = new TicketResponse();
-
-        when(ticketService.assignTicketToAgent(ticketId, agentId)).thenReturn(ticketResponse);
-
-        mockMvc.perform(put("/ticket/" + ticketId + "/assign/" + agentId))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponse)));
-    }
-
-    @Test
-    public void testSearchByDescription() throws Exception {
-        String description = "issue";
-        List<TicketResponse> ticketResponses = new ArrayList<>();
-
-        when(ticketService.searchByDescription(description)).thenReturn(ticketResponses);
-
-        mockMvc.perform(post("/ticket/search/description").param("description", description))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponses)));
-    }
-
-    @Test
-    public void testSearchByCustomer() throws Exception {
-        String customer = "John Doe";
-        List<TicketResponse> ticketResponses = new ArrayList<>();
-
-        when(ticketService.searchByCustomer(customer)).thenReturn(ticketResponses);
-
-        mockMvc.perform(post("/ticket/search/customer").param("customer", customer))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponses)));
+        mockMvc.perform(delete("/ticket/{ticketId}", ticketId)).andExpect(status().isOk());
     }
 }

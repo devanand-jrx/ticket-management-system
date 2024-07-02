@@ -8,10 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TicketRequest {
+public class TicketUpdateRequest {
     @NotBlank(message = "Description cannot be empty")
     private String description;
-
-    private Long agentId;
-    private Long customerId;
 }
