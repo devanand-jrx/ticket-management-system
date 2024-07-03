@@ -1,0 +1,299 @@
+{
+	"info": {
+		"_postman_id": "192cad46-bd45-43d3-93cb-4ba5c5b9736e",
+		"name": "ticket-management-system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "28643575"
+	},
+	"item": [
+		{
+			"name": "create agent",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"John Doe\",\r\n    \"email\": \"john.doe@example.com\",\r\n    \"password\": \"securepassword123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8090/admin/agents"
+			},
+			"response": []
+		},
+		{
+			"name": "all agents",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8090/admin/agents"
+			},
+			"response": []
+		},
+		{
+			"name": "agent by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8090/admin/agents/11"
+			},
+			"response": []
+		},
+		{
+			"name": "delete agent",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8090/admin/agents/3"
+			},
+			"response": []
+		},
+		{
+			"name": "update agent",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "create customer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"d\",\r\n    \"email\" : \"de@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8090/agents/customers"
+			},
+			"response": []
+		},
+		{
+			"name": "get all customer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8090/agents/customers"
+			},
+			"response": []
+		},
+		{
+			"name": "customer  by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8090/agents/customers/5"
+			},
+			"response": []
+		},
+		{
+			"name": "update customer",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"de\",\r\n    \"email\" : \"dev@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8090/agents/customers/2"
+			},
+			"response": []
+		},
+		{
+			"name": "delete customer",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8090/agents/customers/3"
+			},
+			"response": []
+		},
+		{
+			"name": "agent-get-ticket",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8090/agents/ticket"
+			},
+			"response": []
+		},
+		{
+			"name": "agent-ticket-getByID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8090/agents/ticket/5"
+			},
+			"response": []
+		},
+		{
+			"name": "edit ticket by agent",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"description\": \" okm\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8090/agents/ticket/5"
+			},
+			"response": []
+		},
+		{
+			"name": "delete ticket by agent",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8090/ticket/2"
+			},
+			"response": []
+		},
+		{
+			"name": "assign to agent",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": "http://localhost:8090/agents/ticket/5/assign/4"
+			},
+			"response": []
+		},
+		{
+			"name": "search by customer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8090/agents/ticket/search/customer?customer=de",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"agents",
+						"ticket",
+						"search",
+						"customer"
+					],
+					"query": [
+						{
+							"key": "customer",
+							"value": "de"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "search by description",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8090/agents/ticket/search/description?description=Issue with logging into the system",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"agents",
+						"ticket",
+						"search",
+						"description"
+					],
+					"query": [
+						{
+							"key": "description",
+							"value": "Issue with logging into the system"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create new ticket /by customer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"description\": \"Issue with logging into the system\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8090/ticket/1"
+			},
+			"response": []
+		},
+		{
+			"name": "all ticket by customer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8090/ticket"
+			},
+			"response": []
+		},
+		{
+			"name": "ticket by id / by customer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8090/ticket/2"
+			},
+			"response": []
+		},
+		{
+			"name": "edit ticket by customer",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"description\" : \"issue\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8090/ticket/1"
+			},
+			"response": []
+		},
+		{
+			"name": "delete ticket by customer",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8090/ticket/1"
+			},
+			"response": []
+		}
+	]
+}

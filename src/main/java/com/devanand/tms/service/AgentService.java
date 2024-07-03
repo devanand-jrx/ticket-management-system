@@ -2,7 +2,6 @@ package com.devanand.tms.service;
 
 import com.devanand.tms.constant.Status;
 import com.devanand.tms.contract.request.CustomerRequest;
-import com.devanand.tms.contract.request.TicketRequest;
 import com.devanand.tms.contract.request.TicketUpdateRequest;
 import com.devanand.tms.contract.response.CustomerResponse;
 import com.devanand.tms.contract.response.TicketResponse;
@@ -193,35 +192,5 @@ public class AgentService {
         return ticketRepository.findTicketsByCustomerLike(customer).stream()
                 .map(ticket -> modelMapper.map(ticket, TicketResponse.class))
                 .collect(Collectors.toList());
-    }
-
-    public Ticket convertToEntity(TicketRequest ticketRequest) {
-        log.info("Converting TicketRequest to Ticket entity");
-        Agent agent =
-                adminRepository
-                        .findById(ticketRequest.getAgentId())
-                        .orElseThrow(() -> new AgentNotFoundException("Agent not found"));
-        Customer customer =
-                agentRepository
-                        .findById(ticketRequest.getCustomerId())
-                        .orElseThrow(() -> new CustomerNotFoundException("Customer not found"));
-
-        return Ticket.builder()
-                .description(ticketRequest.getDescription())
-                .status(Status.RESOLVED)
-                .agent(agent)
-                .customer(customer)
-                .build();
-    }
-
-    public TicketResponse convertToResponse(Ticket ticket) {
-        log.info("Converting Ticket entity to TicketResponse");
-        return TicketResponse.builder()
-                .id(ticket.getId())
-                .description(ticket.getDescription())
-                .status(String.valueOf(ticket.getStatus()))
-                .agentId(ticket.getAgent().getId())
-                .customerId(ticket.getCustomer().getId())
-                .build();
     }
 }
