@@ -2,6 +2,7 @@ package com.devanand.tms.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -143,6 +144,15 @@ public class AgentControllerTest {
     }
 
     @Test
+    public void testDeleteTicket() throws Exception {
+        Long ticketId = 1L;
+
+        doNothing().when(agentService).deleteTicket(ticketId);
+
+        mockMvc.perform(delete("/agents/ticket/{ticketId}", ticketId)).andExpect(status().isOk());
+    }
+
+    @Test
     public void testAssignTicketToAgent() throws Exception {
         Long ticketId = 1L;
         Long agentId = 1L;
@@ -151,6 +161,30 @@ public class AgentControllerTest {
         when(agentService.assignTicketToAgent(ticketId, agentId)).thenReturn(ticketResponse);
 
         mockMvc.perform(put("/agents/ticket/{ticketId}/assign/{agentId}", ticketId, agentId))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(ticketResponse)));
+    }
+
+    @Test
+    public void testUpdateTicketStatus() throws Exception {
+        Long ticketId = 1L;
+        String newStatus = "Status";
+        TicketResponse ticketResponse =
+                TicketResponse.builder()
+                        .agentId(1L)
+                        .customerId(1L)
+                        .description("description")
+                        .id(1L)
+                        .status(newStatus)
+                        .build();
+
+        when(agentService.updateTicketStatus(eq(ticketId), any(String.class)))
+                .thenReturn(ticketResponse);
+
+        mockMvc.perform(
+                        put("/agents/ticket/{ticketId}/status", ticketId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(newStatus)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(ticketResponse)));
     }

@@ -66,8 +66,8 @@ public class AgentController {
     }
 
     @DeleteMapping("/ticket/{ticketId}")
-    public void deleteTicket(@PathVariable Long id) {
-        agentService.deleteTicket(id);
+    public void deleteTicket(@PathVariable Long ticketId) {
+        agentService.deleteTicket(ticketId);
     }
 
     @PutMapping("/ticket/{ticketId}/assign/{agentId}")
